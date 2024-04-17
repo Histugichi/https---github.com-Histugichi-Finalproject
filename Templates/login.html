@@ -1,0 +1,38 @@
+{% extends 'default.html' %}
+{% block title %} Login  {% endblock %}
+
+{%block content%}
+
+<h>Veuillez vous connecter à votre compte.</h>
+<style>
+
+</style>
+
+
+
+
+  {% if message=='error'%}
+    <p class="alert alert-danger">Tous les champs doivent être remplie pour pouvoir se connecter.</p>
+  
+  {% elif user==None  and message=='success'%}
+    <p class="alert alert-warning">Nom utilisateur ou mot de passe incorrect</p>
+  {% elif message=='failure'%}
+    <p class="alert alert-danger">Erreur lors du traitement, veuillez réessayer plus tard.</p>
+  {% endif %}
+
+
+<form action="{{url_for('login')}}" method="post" class="container">
+  
+    <div class="form-floating mb-3">
+      <input name ='username' type="text" class="form-control" id="username" placeholder="">
+      <label for="username">Username</label>
+    </div>
+    <div class="form-floating mb-3">
+      <input name='password' type="text" class="form-control" id="password" placeholder="">
+      <label for="password">Password</label>
+    </div>
+
+    <input type="submit" value="Se connecter" class = "btn btn-success">
+</form> 
+
+{% endblock%}
