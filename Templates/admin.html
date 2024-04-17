@@ -41,11 +41,17 @@
                             <li><a class="dropdown-item" href="{{url_for('modify_event')}}">Modifier les évènements</a></li>    
                             <li><a class="dropdown-item" href="{{url_for('delete_event')}}">Annuler les évènements</a></li>    
                         </ul>
-                      </li>  
-                      <li class="nav-item">
-                        <a class="nav-link" href="{{url_for('statut')}}"> Statut des réservations </a>
-                      </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="{{url_for('reservations')}}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Reservations
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{url_for('liste_reservation')}}">liste des réservations</a></li>
+                                <li><a class="dropdown-item" href="{{url_for('statut')}}">Statut des réservations</a></li>
                                  
+                            </ul>
+                      </li>  
+                           
                       <li class="nav-item">
                         <a class="nav-link" href="{{url_for('logout')}}"> Logout </a>
                      </li>

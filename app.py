@@ -25,6 +25,10 @@ def home():
 def admin():
     return render_template('admin.html')
 
+@app.route('/accueil')
+def accueil():
+    return render_template('accueil.html')
+
 
 @app.route('/login',methods= ['POST', 'GET'])
 def login():
@@ -56,7 +60,7 @@ def login():
                         if user[3] ==1: #verifier si c'est un admin, sinon rediriger vers la page de reservation
                             return redirect(url_for('admin'))
                         else:
-                            return redirect(url_for("reservations"))  
+                            return redirect(url_for("accueil"))  
         message= 'Username et password invalide'
     return render_template('login.html', message=message, user=None)
 
@@ -155,12 +159,12 @@ def reservations():
 def confirmation():
     return render_template('confirmation.html')
 
-@app.route("/users")
+@app.route('/users')
 def users():
     if 'username' not in session:
         return redirect(url_for('login'))
     message, users = UserDao.list_all()
-    return render_template("liste_users.html", message= message, users= users)
+    return render_template('liste_users.html', message= message, users= users)
 
 @app.route('/add-users', methods= ['POST', 'GET'])
 def add_user():
