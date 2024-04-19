@@ -1,8 +1,9 @@
 class User:
-    def __init__(self,nom_complet, username, password, is_admin) -> None:
+    def __init__(self,nom_complet, username, password, email,is_admin) -> None:
         self.__nom_complet = nom_complet
         self.__username = username
         self.__password = password
+        self.__email = email
         self.__is_admin = is_admin
 
     @property
@@ -28,6 +29,14 @@ class User:
     @password.setter
     def password(self, value):
         self.__password = value
+
+    @property
+    def email(self):
+        return self.__email
+
+    @email.setter
+    def email(self, value):
+        self.__email = value
 
     @property
     def is_admin(self):

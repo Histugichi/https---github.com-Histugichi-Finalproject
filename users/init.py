@@ -4,7 +4,7 @@ import bcrypt
 
 """
 (message,user) =UserDao.get_one('Diallo123')
-print(user[2])
+print(user[3])
 
 password_hash_db = user[2]
 print(password_hash_db)

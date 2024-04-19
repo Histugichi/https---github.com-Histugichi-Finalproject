@@ -1,9 +1,10 @@
 class Evenement:
-    def __init__(self,nom, date,emplacement,prix) -> None:
+    def __init__(self,nom, date,emplacement,prix,id_evenement) -> None:
         self.__nom = nom
         self.__date= date
         self.__emplacement = emplacement
         self.__prix = prix
+        self.__id_evenement= id_evenement
     
 
     @property
@@ -37,3 +38,12 @@ class Evenement:
     @prix.setter
     def prix(self, value):
         self.__prix = value
+    
+    @property
+    def id_evenement(self):
+        return self.__id_evenement
+
+    @id_evenement.setter
+    def id_evenement(self, value):
+        self.__id_evenement = value
+

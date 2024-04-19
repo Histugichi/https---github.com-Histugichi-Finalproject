@@ -57,11 +57,12 @@ def login():
                         session['nom_complet']=user[0] #On met le nom complet dans notre variable de session
                         session['username']=user[1] # On met le username dans notre variable de session
                          
-                        if user[3] ==1: #verifier si c'est un admin, sinon rediriger vers la page de reservation
+                        if user[4] ==1: #verifier si c'est un admin, sinon rediriger vers la page de reservation
+                            session["is_admin"]=user[4]
                             return redirect(url_for('admin'))
                         else:
                             return redirect(url_for("accueil"))  
-        message= 'Username et password invalide'
+        print(message)
     return render_template('login.html', message=message, user=None)
 
 @app.route('/registrer',methods= ['POST', 'GET'])
@@ -74,26 +75,29 @@ def registrer():
         nom_complet = req ['nom_complet']
         username = req ['username']
         password = req ['password']
+        email = req ['email']
         #Hash password
         is_admin= 0
         password = password.encode('utf-8')
         hashed_password = bcrypt.hashpw(password, salt)
         
-        if nom_complet=="" or username=="" or password=="" :
+        if nom_complet=="" or username=="" or password=="" or email=='' :
             message="error"
         else:
-            user = User(nom_complet, username, hashed_password, is_admin)
+            user = User(nom_complet, username, hashed_password,email, is_admin)
             message = UserDao.create(user)
         print(message)
-    return render_template('registrer.html', message=message, user=user)
+    return render_template('user/registrer.html', message=message, user=user)
 
 @app.route('/evenement')
 def evenement():
     message, evenements=EvenementDao.get_all()
-    return render_template('evenement.html', message=message, evenements=evenements)
+    return render_template('event/evenement.html', message=message, evenements=evenements)
 
 @app.route('/add_event', methods= ['POST', 'GET'])
 def add_event():
+    if "is_admin" not in session:
+        return redirect(url_for('login'))
     req = request.form
     message=None
     evenement=None
@@ -103,34 +107,87 @@ def add_event():
         date = req ['date']
         emplacement = req ['emplacement']
         prix = req ['prix']
+        id_evenement = req ['id']
         
-        if nom=="" or date=="" or emplacement=="" or prix=="":
+        if nom=="" or date=="" or emplacement=="" or prix=="" or id_evenement=="":
             message="error"
         else:
-            evenement = Evenement(nom,date,emplacement,prix)
+            evenement = Evenement(nom,date,emplacement,prix,id_evenement)
             message = EvenementDao.create_evenement(evenement)
-            print(message)
-    return render_template('add_event.html', message=message, evenement=evenement)
+        print(message)
+    return render_template('event/add_event.html', message=message, evenement=evenement)
 
-@app.route('/modify_event')
+
+@app.route('/modify_event', methods= ['POST', 'GET'])
 def modify_event():
-    message, evenements=EvenementDao.modifier_evenement()
-    return render_template('modify_event.html', message=message, evenements=evenements)
+    if "is_admin" not in session:
+        return redirect(url_for('login'))
+    message, evenement=EvenementDao.modifier_evenement()
+    return render_template('event/modify_event.html', message=message, evenement=evenement)
 
-@app.route('/delete_event')
+@app.route('/delete_event', methods= ['POST', 'GET'])
 def delete_event():
-    message, evenements=EvenementDao.supprimer_evenement()
-    return render_template('delete_event.html', message=message, evenements=evenements)
+    if "is_admin" not in session:
+        return redirect(url_for('login'))
+    message=None
+    evenement=None
+
+    if request.method == "POST":
+        nom= request.form.get ('nom')
+        date = request.form.get ('date')
+        emplacement = request.form.get ('emplacement')
+        prix = request.form.get ('prix')
+        id_evenement = request.form ['id_evenement']
+
+        if id_evenement=="":
+            message="error"
+        else:
+            evenement = Evenement(nom, date,emplacement,prix,id_evenement)
+            message = EvenementDao.supprimer_evenement(evenement)
+        print(message)
+    
+    return render_template('event/delete_event.html', message=message, evenement=evenement)
+
+
+@app.route('/liste_reservation')
+def liste_reservation():
+    if "is_admin" not in session:
+        return redirect(url_for('login'))
+    message, reservations=ReservationDao.get_all()
+    return render_template('reservation/liste_reservation.html', message=message, reservations=reservations)
+
+
+@app.route('/delete_reservation', methods= ['POST', 'GET'])
+def delete_reservation():
+    if 'username' not in session and "is_admin" not in session:
+        return redirect(url_for('login'))
+    message=None
+    reservation=None
+
+    if request.method == 'POST':
+        nom = request.form.get('nom')
+        id = request.form.get('id')
+        id= request.form ['id']
+        
+        if nom==""  or id=="" or id==""  :
+            message="error"
+        else:
+            user_id=session.get('user_id')
+            if ReservationDao.belongs_to_user(id,user_id,id):
+                message=ReservationDao.annuler_reservation(id)
+            else:
+                message = "Vous etes pas authorized a annuler cette reservation"
+        print(message)
+    return render_template('reservation/delete_reservation.html', message=message, reservation=reservation)
 
 @app.route('/statut')
 def statut():
+    if 'username' not in session and "is_admin" not in session:
+        return redirect(url_for('login'))
     message, reservation = ReservationStatut()
-    return render_template('statut.html', message=message, reservation=reservation)
+    return render_template('reservation/statut.html', message=message, reservation=reservation)
 
 
-@app.route('/historique')
-def historique():
-    return render_template('historique.html')
 
 @app.route("/logout")
 def logout():
@@ -139,32 +196,55 @@ def logout():
 
 @app.route('/reservations', methods=['POST', 'GET'])
 def reservations():
-    nom=None
-    date=None
-    statut=None
+    if 'username' not in session and "is_admin" not in session:
+        return redirect(url_for('login'))
+
+    message=None
+    reservation=None
+
     if request.method == 'POST':
         nom = request.form['nom']
         date = request.form['date']
-        statut = request.form['statut']
-        if nom=="" or date=="" or statut=="" :
+        place = request.form['place']
+        id_evenement = request.form['id_evenement']
+        id_user = request.form['id_user']
+        
+        if nom=="" or date=="" or place=="" or id_evenement=="" or id_user=="" :
             message="error"
         else:
-            reservation = Reservation(nom, date, statut)
+            id_reservation =1
+            statut = "Pending"
+            reservation = Reservation(nom, date, place,id_evenement,id_user,id_reservation,statut)
             message = ReservationDao.reserver_place(reservation)
             print(message)
         return redirect(url_for('paiement'))
-    return render_template('reservations.html', nom=nom, date=date, statut=statut)
+    return render_template('reservation/reservations.html',message=message, reservation=reservation)
+
+@app.route('/historique')
+def historique():
+    if 'username' not in session and "is_admin" not in session:
+        return redirect(url_for('login'))
+    message, reservations = ReservationDao.belongs_to_user()
+    return render_template('reservation/historique.html', message=message, reservations=reservations)
 
 @app.route('/confirmation')
 def confirmation():
-    return render_template('confirmation.html')
+    user=session.get('user')
+    if not user:
+        return redirect(url_for('login'))
+    evenement=EvenementDao.recuperer_evenement_par_id()
+    return render_template('confirmation.html',user=user, evenement=evenement)
 
 @app.route('/users')
 def users():
     if 'username' not in session:
         return redirect(url_for('login'))
+    if "is_admin" not in session:
+        return redirect(url_for("login"))
+    message =None
+    users= None  
     message, users = UserDao.list_all()
-    return render_template('liste_users.html', message= message, users= users)
+    return render_template('user/liste_users.html', message= message, users= users)
 
 @app.route('/add-users', methods= ['POST', 'GET'])
 def add_user():
@@ -189,32 +269,29 @@ def add_user():
             user = User(nom_complet,username,hashed_password, type)
             message = UserDao.create(user)
         print(message)
-    return render_template('add_users.html', message= message, user=user)
+    return render_template('user/add_users.html', message= message, user=user)
 
 
 
 @app.route('/paiement', methods=['POST','GET'])
 def paiement():
-    montant=None
-    mode_paiement=None
-    id_paiement=None
-    date=None
-    cvv=None
+    message=None
+    paiement=None
     
     if request.method == 'POST':
-        montant = request.form['card_number']
+        montant = request.form['montant']
         mode_paiement= request.form['mode_paiement']
-        id_paiement=request.form['id_paiement']
-        date=request.form['date']
+        numero_carte=request.form['numero_carte']
+        date_expiration=request.form['date_expiration']
         cvv = request.form['cvv']
 
-        if montant=="" or mode_paiement=="" or id_paiement=="" or date=="" or cvv=="":
+        if montant=="" or mode_paiement=="" or numero_carte=="" or date_expiration=="" or cvv=="":
             message="error"
         else:
-            paiement= Paiement(montant,mode_paiement,id_paiement,date,cvv)
+            paiement= Paiement(montant,mode_paiement,numero_carte,date_expiration,cvv)
             message = PaiementDao.ajouter_paiement(paiement)
         return redirect(url_for('confirmation'))
-    return render_template('paiement', message=message, paiement=paiement)
+    return render_template('paiement.html', message=message, paiement=paiement)
 
 
 if __name__ == "__main__":

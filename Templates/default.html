@@ -24,7 +24,7 @@
 <body class="container">
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
-          <a class="navbar-brand" href="{{url_for('home')}}"> Activités sportives </a>
+          <a class="navbar-brand" href="{{url_for('home')}}"> Activités </a>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
@@ -44,8 +44,14 @@
               
               {% if session %}
               
-              <li class="nav-item">
-                <a class="nav-link" href="{{url_for('reservations')}}"> Réservations </a>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="{{url_for('reservations')}}"  role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Réservations
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{{url_for('reservations')}}" >Réservation</a></li>
+                    <li><a class="dropdown-item" href="{{url_for('delete_reservation')}}" >Supprimer</a></li>
+                </ul>
               </li>
 
               <li class="nav-item">
@@ -54,10 +60,8 @@
              <li class="nav-item">
                 <a class="nav-link" href="{{url_for('logout')}}"> Logout </a>
               </li>
-              {% endif %}   
-             
-              
-                         
+              {% endif %}  
+                      
             </ul>
           </div>
         </div>

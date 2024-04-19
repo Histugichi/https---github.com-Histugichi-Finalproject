@@ -1,6 +1,7 @@
 import database
 from evenements.evenement import Evenement
 from flask_bcrypt import Bcrypt
+#from evenement import Evenement
 
 
 
@@ -10,14 +11,14 @@ class EvenementDao:
 
     @classmethod
     def create_evenement(cls, evenement:Evenement):
-        sql = "INSERT INTO evenement (nom, date, emplacement, prix) VALUES (%s,%s,%s,%s)",
-        params = (evenement.nom, evenement.date, evenement.emplacement, evenement.prix)
+        sql = "INSERT INTO evenement (nom, date, emplacement, prix,id_evenement) VALUES (%s,%s,%s,%s,%s)"
+        params = (evenement.nom, evenement.date, evenement.emplacement, evenement.prix, evenement.id_evenement)
         try:
             EvenementDao.cursor.execute(sql, params)
             EvenementDao.connexion.commit()
             message = 'success'
         except Exception as error:
-             message = 'failure'
+            message = 'failure'
         return message
     
     @classmethod
@@ -47,7 +48,7 @@ class EvenementDao:
       
     @classmethod
     def supprimer_evenement(cls, id_evenement):
-        sql = "DELETE FROM evenement WHERE id = %s"
+        sql = "DELETE FROM evenement WHERE id_evenement = %s"
         try:
             EvenementDao.cursor.execute(sql,(id_evenement,))
             EvenementDao.connexion.commit()
@@ -58,14 +59,14 @@ class EvenementDao:
 
     @classmethod
     def recuperer_evenement_par_id(cls, id_evenement):
-        sql = "SELECT * FROM evenement WHERE id = %s" 
+        sql = "SELECT * FROM evenement WHERE id_evenement = %s" 
         try:
             EvenementDao.cursor.execute(sql,(id_evenement,))
             evenement = EvenementDao.cursor.fetchone()
-            if evenement is None:
-                return None
+            if evenement:
+                return Evenement(evenement)
             else:
-                return Evenement(*evenement)
+                return None
         except Exception as error:
             print("Erreur lors de la récupération de l'événement par ID")
         return None

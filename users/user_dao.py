@@ -12,8 +12,8 @@ class UserDao:
 
     @classmethod
     def create(cls,user: User):
-        sql = "INSERT INTO user (nom_complet,username,password, is_admin) VALUES (%s,%s,%s,%s)"
-        params = (user.nom_complet,user.username,user.password, user.is_admin)
+        sql = "INSERT INTO user (nom_complet,username,password,email, is_admin) VALUES (%s,%s,%s,%s,%s)"
+        params = (user.nom_complet,user.username,user.password, user.email,user.is_admin)
         try:
             UserDao.cursor.execute(sql, params)
             UserDao.connexion.commit()
